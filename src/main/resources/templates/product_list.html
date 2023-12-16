@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>商品列表</title>
+    <link rel="stylesheet" th:href="@{/static/css/user.css}">
+    <style>
+        nav {
+            background-color: #333;
+            height: 50px;
+            line-height: 50px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav li {
+            float: left;
+        }
+
+        nav a {
+            display: block;
+            color: #fff;
+            padding: 0 20px;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div style="padding: 50px;">
+    <nav>
+        <ul>
+            <li><a th:href="@{/product/toAdd}">添加商品</a></li>
+            <!-- 批量删除  -->
+            <li><a id="deleteByIds" href="#">批量删除</a></li>
+            <!-- 实现产地下拉框、果蔬名称的联合模糊查询功能，同时支持产品发布时间的区间模糊查询 -->
+            <li>
+                <!-- 修改搜索参数为areaId -->
+                <select name="areaId" id="areaId">
+                    <option value="">请选择产地</option>
+                </select>
+                <input type="text" id="searchProductName" placeholder="果蔬名称">
+                <span style="margin-right: 5px;color: white">开始日期</span><input type="date" id="searchStartDate"
+                                                                                   placeholder="">
+                <span style="margin-right: 5px;color: white">结束日期</span><input type="date" id="searchEndDate"
+                                                                                   placeholder="">
+                <button id="searchProducts">搜索</button>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="dataTable">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="12">商品列表</th>
+                </tr>
+                <tr>
+                    <th><input type="checkbox" id="selectAll"></th>
+                    <th>序号</th>
+                    <th>果蔬名称</th>
+                    <th>图片</th>
+                    <th>果蔬产地</th>
+                    <th>规格</th>
+                    <th>产品特色</th>
+                    <th>单价</th>
+                    <th>商家</th>
+                    <th>发布时间</th>
+                    <th>是否公开</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+
+
+            <tbody>
+            <tr th:each="product : ${page.list}">
+                <td><input type="checkbox" name="selectedIds" th:value="${product.id}" th:if ="${user.id == product.userId}"></td>
+                <td th:text="${product.id}"></td>
+                <td th:text="${product.name}"></td>
+                <td th:text="${product.img}"></td>
+                <td th:text="${product.areaName}"></td>
+                <td th:text="${product.specification}"></td>
+                <td th:text="${product.description}"></td>
+                <td th:text="${product.price}"></td>
+                <td th:text="${product.userName}"></td>
+                <td th:text="${product.createTime}" class="create-time"></td>
+                <td th:text="${product.isPublic == 1 ? '是' : '否'}"></td>
+                <td>
+                    <a class="deleteA" @click="deleteProduct" th:href="@{'/product/'+${product.id}}" th:if ="${user.id == product.userId}">删除</a>
+                    <a th:href="@{'/product/'+${product.id}}" th:if ="${user.id == product.userId}">修改</a>
+                    <a th:href="@{'/product/toDetail/'+${product.id}}">查看</a>
+                </td>
+            </tr>
+            </tbody>
+
+
+        </table>
+
+    </div>
+
+
+    <form id="delete_form" method="post">
+        <input type="hidden" name="_method" value="delete"/>
+    </form>
+
+    <div style="text-align: center;margin-top: 10px">
+        <a th:if="${page.hasPreviousPage}" th:href="@{/product/page/1}">首页</a>
+        <a th:if="${page.hasPreviousPage}" th:href="@{'/product/page/'+${page.prePage}}">上一页</a>
+        <span th:each="num : ${page.navigatepageNums}">
+        <a th:href="@{'/product/page/' + ${num}}" th:text="${num}"></a>
+    </span>
+        <a th:if="${page.hasNextPage}" th:href="@{'/product/page/'+${page.nextPage}}">下一页</a>
+        <a th:if="${page.hasNextPage}" th:href="@{'/product/page/'+${page.pages}}">尾页</a>
+    </div>
+
+</div>
+
+
+<script type="text/javascript" src="/static/js/vue.js"></script>
+<script th:src="@{/static/js/jquery-3.6.0.min.js}"></script>
+
+<script type="text/javascript">
+    var vue = new Vue({
+        el: "#dataTable",
+        methods: {
+            //event表示当前事件
+            deleteProduct: function (event) {
+                //通过id获取表单标签
+                var delete_form = document.getElementById("delete_form");
+                //将触发事件的超链接的href属性为表单的action属性赋值
+                delete_form.action = event.target.href;
+                //提交表单
+                delete_form.submit();
+                //阻止超链接的默认跳转行为
+                event.preventDefault();
+            }
+        }
+    });
+
+    /*将createTime时间格式化为yyyy-MM-dd*/
+    var createTimes = document.getElementsByClassName("create-time");
+    for (var i = 0; i < createTimes.length; i++) {
+        var createTime = createTimes[i].innerHTML;
+        var date = new Date(createTime);
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        createTimes[i].innerHTML = year + "-" + month + "-" + day;
+    }
+
+    // 全选/取消全选
+    $("#selectAll").click(function () {
+        $("input[name='selectedIds']").prop("checked", $(this).prop("checked"));
+    });
+
+    // 批量删除
+    $("#deleteByIds").click(function () {
+        var selectedIds = [];
+        $("input[name='selectedIds']:checked").each(function () {
+            // 把选中的复选框的value值加入到selectedIds中
+            console.log($(this).val())
+            selectedIds.push($(this).val());
+        });
+        if (selectedIds.length === 0) {
+            alert("请先选择要删除的商品");
+            return;
+        }
+        // 提示是否确认删除
+        if (!confirm("确认删除选中的商品吗？")) {
+            return;
+        }else {
+            $.ajax({
+                url: "/product/batchDelete",
+                type: "DELETE",
+                data: JSON.stringify(selectedIds),
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (res) {
+                    if (res.code === 200) {
+                        alert(res.msg)
+                    } else {
+                        alert(res.msg)
+                    }
+                    searchProducts();
+                }
+            });
+        }
+
+    });
+
+    // 商品搜索
+    $("#searchProducts").click(function () {
+        searchProducts();
+    });
+
+    function searchProducts() {
+        var searchParams = {
+            areaId: $("#areaId").val(),
+            productName: $("#searchProductName").val(),
+            startDate: $("#searchStartDate").val(),
+            endDate: $("#searchEndDate").val(),
+            pageNum: 1
+        };
+        $.ajax({
+            url: "/product/search",
+            type: "POST",
+            data: JSON.stringify(searchParams),
+            contentType: "application/json",
+            success: function (res) {
+                // 渲染表格数据
+                var tableBody = $("#dataTable table tbody");
+                tableBody.empty();
+                var userId = res.user.id;
+                $.each(res.data.list, function (index, product) {
+                    var tr = $("<tr>");
+                    if (userId === product.userId) {
+                        tr.append('<td><input type="checkbox" name="selectedIds" value="' + product.id + '"></td>');
+                    } else {
+                        tr.append('<td></td>');
+                    }
+                    tr.append('<td>' + product.id + '</td>');
+                    tr.append('<td>' + product.name + '</td>');
+                    tr.append('<td>' + product.img + '</td>');
+                    tr.append('<td>' + product.areaName + '</td>');
+                    tr.append('<td>' + product.specification + '</td>');
+                    tr.append('<td>' + product.description + '</td>');
+                    tr.append('<td>' + product.price + '</td>');
+                    tr.append('<td>' + product.userName + '</td>');
+                    tr.append('<td class="create-time">' + formatDateTime(product.createTime) + '</td>');
+
+                    if (userId === product.userId) {
+                        tr.append('<td>' + (product.isPublic === 1 ? '是' : '否') + '</td>');
+                        tr.append('<td>' +
+                            '<a class="deleteA" onclick="deleteProduct(' + product.id + ')" href="/product/' + product.id + '">删除</a>' +
+                            '<a href="/product/' + product.id + '">修改</a>' +
+                            '<a href="/product/toDetail/' + product.id + '">查看</a>' +
+                            '</td>');
+                    } else {
+                        tr.append('<td>' + (product.isPublic === 1 ? '是' : '否') + '</td>');
+                        tr.append('<td>' +
+                            '<a href="/product/toDetail/' + product.id + '">查看</a>' +
+                            '</td>');
+                    }
+
+                    tableBody.append(tr);
+                });
+            },
+        });
+    }
+
+    // 将时间戳格式化为yyyy-MM-dd
+    function formatDateTime(timestamp) {
+        var date = new Date(timestamp);
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        return year + "-" + month + "-" + day;
+    }
+
+    $(document).ready(function () {
+        $.ajax({
+            url: "/getAllArea",
+            method: "GET",
+            success: function (response) {
+                var areaDropdown = $("#areaId")
+                areaDropdown.empty();  // 清空下拉框选项
+
+                // 添加默认选项
+                areaDropdown.append('<option value="">请选择产地</option>');
+
+                // 将返回的数据列表添加到下拉框中
+                response.forEach(function (area) {
+                    areaDropdown.append('<option value="' + area.id + '">' + area.areaName + '</option>');
+                });
+            },
+            error: function () {
+                console.log("获取产地信息失败");
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

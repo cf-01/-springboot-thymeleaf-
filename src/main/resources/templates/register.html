@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8"/>
+    <title>商家注册</title>
+    <link rel="stylesheet" th:href="@{/static/css/user.css}">
+</head>
+<body>
+<div class="login-box">
+    <h2>商家注册</h2>
+    <form th:action="@{/register}" method="post">
+        <div class="user-box">
+            <label>用户名</label>
+            <!--     需发送请求判断是否已经存在      -->
+            <input id="username-input" type="text" placeholder="请输入用户名"  name="username" required=""/>
+        </div>
+        <div class="user-box">
+            <label>密码</label>
+            <input id="password-input" type="password" placeholder="请输入注册的密码" name="password" required=""/>
+
+        </div>
+        <div class="user-box">
+            <label>确认密码</label>
+            <input id="repassword-input" type="password" placeholder="请输入确认密码" name="repassword" required=""/>
+        </div>
+        <div class="user-box">
+            <label>联系电话</label>
+            <input type="text" placeholder="请输入联系电话"  name="tel" required=""/>
+
+        </div>
+        <div class="user-box">
+            <label>联系地址</label>
+            <input type="text" placeholder="请输入联系地址"  name="address" required=""/>
+
+        </div>
+        <button type="submit" class="login-btn">注册</button>
+    </form>
+    <a style="font-size: 12px" th:href="@{'/toLogin'}">已有账号?点击登录</a>
+
+
+</div>
+
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+    <script>
+        // 判断用户名是否被注册
+        $("#username-input").blur(function () {
+            var username = $("#username-input").val();
+            $.ajax({
+                url: "/checkUsername",
+                type: "post",
+                data: {
+                    username: username
+                },
+                success: function (data) {
+                    if (data.code === 500) {
+                        alert("用户名已存在,请重新输入");
+                    }
+                }
+            })
+        })
+
+        // 判断两次密码是否一致
+        $("#repassword-input").blur(function () {
+            var password = $("#password-input").val();
+            var repassword = $("#repassword-input").val();
+            if (password !== repassword) {
+                alert("两次密码不一致,请重新输入");
+            }
+        })
+
+
+    </script>
+</body>
+</html>

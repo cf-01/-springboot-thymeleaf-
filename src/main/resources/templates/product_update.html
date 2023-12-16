@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>编辑商品信息</title>
+    <link rel="stylesheet" th:href="@{/static/css/addOrUpdate.css}">
+</head>
+<body>
+<div style="padding: 50px;">
+    <h1>编辑商品信息</h1>
+    <form>
+        <input type="hidden" name="id" th:value="${product.id}">
+        果蔬名称:<input type="text" name="name" th:value="${product.name}"><br>
+        产地:<br>
+        <select name="areaId" id="areaId">
+            <option value="">请选择产地</option>
+            <option th:selected="${product.areaId == area.id}" th:each="area : ${areas}"
+                    th:value="${area.id}" th:text="${area.areaName}"></option>
+        </select><br>
+        图片链接:<input type="text" name="img" th:value="${product.img}"><br>
+        规格:<input type="text" name="specification" th:value="${product.specification}"><br>
+        产品特色:<input type="text" name="description" th:value="${product.description}"><br>
+        单价:<input type="text" name="price" th:value="${product.price}"><br>
+        发布时间:<input type="text" name="createTime" th:value="${product.createTime}" id="create-time"><br>
+        是否公开:<input type="radio" name="isPublic" value="1" th:checked="${product.isPublic} == 1"> 是
+                <input type="radio" name="isPublic" value="0" th:checked="${product.isPublic} == 0"> 否<br>
+        <input type="button" value="修改" id="updateProduct"><br>
+    </form>
+</div>
+
+<script th:src="@{/static/js/jquery-3.6.0.min.js}"></script>
+<script>
+    /*将create-time时间格式化为yyyy-MM-dd */
+    var createTime = document.getElementById("create-time");
+    var date = new Date(createTime.value);
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    createTime.value = year + "-" + month + "-" + day;
+    $("#create-time").innerText = createTime.value;
+
+    /*修改产品通过ajax发送json形式*/
+    $("#updateProduct").click(function () {
+        var product = {
+            id: $("input[name='id']").val(),
+            name: $("input[name='name']").val(),
+            areaId: $("select[name='areaId']").val(),
+            img: $("input[name='img']").val(),
+            specification: $("input[name='specification']").val(),
+            description: $("input[name='description']").val(),
+            price: $("input[name='price']").val(),
+            createTime: $("input[name='createTime']").val(),
+            isPublic: $("input[name='isPublic']:checked").val()
+        };
+
+        $.ajax({
+            url: "/product/updateProduct",
+            method: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify(product),
+            success: function (response) {
+                if (response.code === 200) {
+                    alert("修改成功");
+                    window.location.href = "/product/page/1";
+                } else {
+                    alert("修改失败");
+                }
+            },
+            error: function () {
+                alert("修改失败");
+            }
+        });
+    });
+
+
+</script>
+
+</body>
+</html>

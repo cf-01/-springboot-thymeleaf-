@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>商品详情</title>
+    <style>
+        .product-details {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: left;
+            padding: 20px;
+            background-color: #f2f2f2;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+        }
+
+        .product-details h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .product-details div {
+            width: 500px;
+            margin-bottom: 10px;
+        }
+
+        .product-details p {
+            margin: 0;
+        }
+
+        .product-details span {
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="product-details">
+    <div>
+        <h1>商品详情页</h1>
+    </div>
+    <input type="hidden" name="id" th:value="${product.id}">
+    <div>
+        <p>果蔬名称: <span th:text="${product.name}"></span></p>
+    </div>
+    <div>
+        <p>产地: <span th:text="${product.areaName}"></span></p>
+    </div>
+    <div>
+        <p>图片链接: <span th:text="${product.img}"></span></p>
+    </div>
+    <div>
+        <p>规格: <span th:text="${product.specification}"></span></p>
+    </div>
+    <div>
+        <p>产品特色: <span th:text="${product.description}"></span></p>
+    </div>
+    <div>
+        <p>单价: <span th:text="${product.price}"></span></p>
+    </div>
+    <div>
+        <p>商家: <span th:text="${product.userName}"></span></p>
+    </div>
+    <div>
+        <p>发布时间: <span th:text="${product.createTime}" id="create-time"></span></p>
+    </div>
+
+</div>
+
+<script th:src="@{/static/js/jquery-3.6.0.min.js}"></script>
+<script>
+    /*将create-time时间格式化为yyyy-MM-dd */
+    var createTime = document.getElementById("create-time");
+    var date = new Date(createTime.innerText);
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    createTime.innerText = year + "-" + month + "-" + day;
+
+</script>
+
+
+</body>
+</html>
